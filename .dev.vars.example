@@ -1,0 +1,7 @@
+# Copy to .dev.vars for local dev.
+# Password to log in (single-user).
+ADMIN_PASSWORD="changeme"
+# Secret to sign session cookies. Generate: openssl rand -hex 32
+SESSION_SECRET="replace-with-32-byte-random-hex"
+# Daily salt seed for session hashing (rotate daily if paranoid).
+SALT_SEED="replace-with-random-string"

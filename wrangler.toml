@@ -1,0 +1,16 @@
+name = "analythicc"
+compatibility_date = "2024-11-12"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+# After running `wrangler d1 create analythicc`,
+# replace database_id below with the value wrangler prints.
+[[d1_databases]]
+binding = "DB"
+database_name = "analythicc"
+database_id = "ee636a1e-5f33-4561-b108-e0118e981303"
+migrations_dir = "drizzle/migrations"
+
+[vars]
+# Override via dashboard or .dev.vars for local.
+APP_NAME = "analythicc"
