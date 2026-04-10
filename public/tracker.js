@@ -8,9 +8,15 @@
   })();
   if (!scriptEl) return;
 
-  var siteId = scriptEl.getAttribute('data-site');
+  var scriptUrl = null;
+  try { scriptUrl = scriptEl.src ? new URL(scriptEl.src) : null; } catch (e) {}
+  // Site id can come from data-site attribute OR ?site= query param on the
+  // script URL. Query param is useful with Next.js <Script>, which dedupes
+  // by src and ignores duplicate tags pointing to the same file.
+  var siteId = scriptEl.getAttribute('data-site') ||
+    (scriptUrl && scriptUrl.searchParams.get('site'));
   var endpoint = scriptEl.getAttribute('data-endpoint') ||
-    (scriptEl.src ? new URL(scriptEl.src).origin + '/api/collect' : '/api/collect');
+    (scriptUrl ? scriptUrl.origin + '/api/collect' : '/api/collect');
   if (!siteId) return;
 
   // Do not track in dev unless explicitly allowed.

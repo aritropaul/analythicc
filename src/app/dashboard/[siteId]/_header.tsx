@@ -6,17 +6,27 @@ import { useState } from 'react';
 import { Modal } from '@/components/modal';
 import type { Site } from '@/lib/schema';
 
+type Variant = 'html' | 'next';
+
 export function SiteHeader({ site }: { site: Site }) {
   const [snippetOpen, setSnippetOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [variant, setVariant] = useState<Variant>('html');
   const router = useRouter();
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const snippet = `<script defer src="${origin}/tracker.js" data-site="${site.id}"></script>`;
+  const htmlSnippet = `<script defer src="${origin}/tracker.js" data-site="${site.id}"></script>`;
+  const nextSnippet = `import Script from 'next/script';
+
+<Script
+  src="${origin}/tracker.js?site=${site.id}"
+  strategy="afterInteractive"
+/>`;
+  const currentSnippet = variant === 'next' ? nextSnippet : htmlSnippet;
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(snippet);
+      await navigator.clipboard.writeText(currentSnippet);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {}
@@ -75,19 +85,47 @@ export function SiteHeader({ site }: { site: Site }) {
         className="w-full max-w-2xl p-8"
       >
         <div className="space-y-5">
-          <div>
-            <h2 className="font-display text-[1.875rem] text-ink-900 leading-[1] tracking-[-0.015em]">
-              Install tracker
-            </h2>
-            <p className="text-[12.5px] text-ink-900/55 mt-1.5">
-              Paste before <code className="text-coral-500 font-mono text-[11px]">&lt;/head&gt;</code> on every page of{' '}
-              <span className="text-ink-900 font-medium">{site.domain}</span>.
-            </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-display text-[1.875rem] text-ink-900 leading-[1] tracking-[-0.015em]">
+                Install tracker
+              </h2>
+              <p className="text-[12.5px] text-ink-900/55 mt-1.5">
+                Track <span className="text-ink-900 font-medium">{site.domain}</span> by adding this
+                to every page.
+              </p>
+            </div>
+            <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-ink-900/[0.04] border border-ink-900/[0.06] shrink-0">
+              {(['html', 'next'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setVariant(v)}
+                  className={`text-[11px] font-medium px-2.5 py-1 rounded-full transition-colors duration-200 ${
+                    variant === v
+                      ? 'bg-ink-900 text-cream-50'
+                      : 'text-ink-900/55 hover:text-ink-900'
+                  }`}
+                >
+                  {v === 'html' ? 'HTML' : 'Next.js'}
+                </button>
+              ))}
+            </div>
           </div>
-          <pre className="bg-ink-900 text-cream-50 rounded-2xl p-4 text-[12px] overflow-x-auto font-mono leading-relaxed">
-            {snippet}
+          <pre className="bg-ink-900 text-cream-50 rounded-2xl p-4 text-[12px] overflow-x-auto font-mono leading-relaxed whitespace-pre">
+            {currentSnippet}
           </pre>
           <div className="text-[12px] text-ink-900/60 space-y-1.5 border-t border-ink-900/[0.06] pt-4">
+            {variant === 'next' && (
+              <p className="flex gap-2">
+                <span className="text-ink-900/40 shrink-0 w-28">Why ?site=</span>
+                <span>
+                  Next.js{' '}
+                  <code className="text-coral-500 font-mono text-[11px]">&lt;Script&gt;</code> dedupes
+                  by <code className="text-coral-500 font-mono text-[11px]">src</code>, so the query
+                  string makes each tag unique.
+                </span>
+              </p>
+            )}
             <p className="flex gap-2">
               <span className="text-ink-900/40 shrink-0 w-28">Custom events</span>
               <code className="text-coral-500 font-mono text-[11px]">
